@@ -1,0 +1,416 @@
+import java.util.Scanner; //importing scanner method
+import java.util.Random; //importing RNG method
+
+public class WoF { //file name
+  
+  //global variables declaration
+  public static int topD, numberC, gain, round;
+  public static char guessL;
+  public static String guessP, phrase, board;
+  public static boolean tof;
+  
+  //method to spin the wheel of fortune
+  public static void wheelOfFortune (int[] spinner, int[] userTotal, int rngSpin) { //void method
+    System.out.println ("The wheel is spinning..."); //Print this
+    if (0 <= rngSpin && rngSpin <= 20) { //condition, if met, proceed
+      System.out.println ("You landed on $" + spinner[rngSpin] + " amount!"); //Print this
+    } 
+    else if (rngSpin == 21 || rngSpin == 22) { //condition, if met, proceed
+      System.out.println ("You went bankrupt"); //Print this
+//      break;
+    }
+    else if (rngSpin == 23) { //condition, if met, proceed
+      System.out.println ("You landed on skip a turn"); //Print this
+//      break;
+    }
+    else if (rngSpin == 24) { //condition, if met, proceed
+      System.out.println ("You landed on a top dollar value of $" + spinner[24] + " amount!"); //Print this
+    }
+  }
+  
+  //method to check if the letter guessed is on the gameboard
+  public static void gameBoard (String phrase, char[] phraseC, char[] phraseS, char guessL, int[] spinner, int rngSpin){
+    numberC = 0; //assigning value to variable
+    for (int i=0;i<phrase.length (); i++) { //for loop
+      if (guessL == phraseC [i]) { //condition, if met, proceed
+        phraseS [i] = guessL; //changes the gameboard to reveal guessed letter
+        numberC++; //counts number of times the guessed letter appears in the phrase
+      }
+    }
+    if (numberC > 0) { //condition, if met, proceed
+      System.out.println ("Congrats, there are " + numberC + " of those letters!"); //Print this
+//      gain=0; //clears
+      gain = numberC*spinner[rngSpin]; //value assignment to variable
+    }
+    else if (numberC==0) {  //condition, if met, proceed
+      System.out.println ("Sorry, that letter does not appear in this phrase"); //Print this
+      gain=0; //value assignment for variable; gains no money
+//      break;
+    }
+  }
+  
+  //method to record the guessed letters
+  public static void record (char guessL, boolean[] enter, char[] alphabet) {
+    for (int i=0; i<26; i++) { //for loop
+      if (guessL == alphabet[i]) { //matches the letter guessed to the alphabet array
+        enter [i] = true; //changes enter array to true; all marked trues are the letters that have been guessed already
+      }
+    }
+  }
+  
+  //method to check if the letter has already beeen guessed before 
+  public static boolean validateC (String phrase, char guessL, char[] alphabet, boolean[] enter, char[] phraseS) {
+    tof = false; //resets variable to false
+    for (int i=0; i<26; i++) { //for loop
+      if (guessL == alphabet[i]){ //matches the letter guessed to the alphabet array
+        if (enter[i]) { //if the index is true
+          tof = true; //variable becomes true
+        }
+      }
+    }
+    return tof; //returns value of tof
+  }
+  
+  //method to display all the letters that have been guessed so far
+  public static void show (char[] alphabet, boolean[] enter) {
+    String guessDisplay = " "; //variable declaration and value assignment (assigned a blank space as value because variable is null if nothing is stored in it at first
+    for (int i=0; i<26; i++) { //for loop
+      if (enter[i]) { //if index i in enter is true
+        guessDisplay = guessDisplay+Character.toString(alphabet[i])+", "; //updates value of variable guessDisplay by concating all the true indexes in enter array
+      }
+    }
+    System.out.println ("The letters that have been guessed so far are:" + guessDisplay); //Print this
+  }
+  
+  //method to determine which message to show when the correct phrase is guessed (end of last round or starts a new round)
+  public static void whichP (int round) {
+    if (round <3) { //condition, if met, proceed
+      System.out.println ("A new round will start now"); //Print this
+    }
+    else if (round ==3) { //condition, if met, proceed
+      System.out.println ("That is the last round!"); //Print this
+    }
+  }
+  
+  //method to get first letter input from user and changing it to caps
+  public static void iChange (String guess) { 
+    guess=guess.toUpperCase (); //changes what user enters to all uppercase
+    guessL=guess.charAt(0); //assigns only the first letter of what the user enters as value for variable
+  }
+  
+  //method to start a new round if user decides to finish the board by keep guessing letters
+  public static boolean boardFinish (String phrase, char [] phraseS) { 
+    boolean boardF = false; //resets variable value to false
+    board = String.copyValueOf(phraseS); //concats all values in char array and assigns it as value for string variable
+    if (board.equalsIgnoreCase (phrase)) { //condition, if met, proceed
+      System.out.println ("The board is now revealed"); //print this
+      System.out.println ("A new round will now begin"); //print this
+      boardF = true; //sets variable as true
+    }
+    return boardF; //returns value of variable
+  }
+  
+  //method for text display for computer
+  public static void textDisplay (char [] phraseS, int[] spinner, int[] userTotal, int rngSpin) {
+     System.out.println (); //print line break to make things neater
+     System.out.println ("Computer's turn:"); //Print this
+     System.out.println ("Your phrase is: "); //Print this
+     System.out.println (phraseS); //Print this
+     wheelOfFortune (spinner , userTotal, rngSpin); //uses wheelOfFortune method
+  }
+  
+  public static void main (String args []) { //main entry point
+    Random randGen = new Random (); //random number generator declaration
+    Scanner myScanner = new Scanner (System.in); //scanner declaration
+    
+    char alphabet [] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'}; //char array declaration and store all alphabet
+    
+    //money from each round **set to 4 because there will be nothing stored in index 0 since round starts at 1**
+    int userTotal [] = new int [4]; //array to store money amount of user per round
+    int compTotal [] = new int [4]; //array to store money amount of computer per round
+    
+    //storing the 25 phrases into an array
+    String [] phrases = new String[25];
+    phrases [0] = "PHILLY CHEESE STEAK";
+    phrases [1] = "SAUSAGE AND EGGDS";
+    phrases [2] = "BOWL OF RAMEN";
+    phrases [3] = "BAKED POTATO";
+    phrases [4] = "CHICKEN WINGS";
+    phrases [5] = "BUCKET OF CHICKEN";
+    phrases [6] = "ONION RINGS";
+    phrases [7] = "BIRTHDAY CAKE";
+    phrases [8] = "CARROT CAKE";
+    phrases [9] = "SPONGE CAKE";
+    phrases [10] = "BURGER AND FRIES";
+    phrases [11] = "FISH AND CHIPS";
+    phrases [12] = "BARBEQUE CHIPS";
+    phrases [13] = "TOMATO CHIPS";
+    phrases [14] = "TURKEY DINNER";
+    phrases [15] = "PIZZA AND DIP";
+    phrases [16] = "FRIED RICE";
+    phrases [17] = "BUBBLE TEA";
+    phrases [18] = "HOT CHOCOLATE";
+    phrases [19] = "MEXICAN BURRITO";
+    phrases [20] = "HARD SHELL TACO";
+    phrases [21] = "CHICKEN NUGGETS";
+    phrases [22] = "CHOCOLATE FUDGE";
+    phrases [23] = "STRAWBERRY WAFFLE";
+    phrases [24] = "EGG TARTS";
+    
+    /*storing the values on the wheel
+     * all values between 500-900 are the rewards value
+     * 0 is bankrupt
+     * 10 is losing a turn
+     * 100 is the top dollar value
+     */
+    
+    int again; //variable declaration for when asking user if they want to play again
+    do {
+    round = 1;
+    
+    System.out.println ("Welcome to the Wheel of Fortune game!"); //Print this
+    System.out.println ("The theme of this game is: Foods and Drinks"); //Print this
+    
+    round: //loop label
+      //changes the top dollar amount according to round
+      while (round<4) {
+      if (round == 1) {
+        topD = 2500;
+      }
+      else if (round == 2) {
+        topD = 3500;
+      }
+      else if (round ==3) {
+        topD = 5000;
+      }
+      
+      int [] spinner = {500, 520, 540, 560, 580, 600, 620, 640, 660, 680, 700, 720, 740, 760, 780, 800, 820, 840, 860, 880, 900, 0, 0, 10, topD}; //array to store the money amount on spinner
+      
+      boolean enter [] = new boolean [26]; //boolean array used when checking if letter has been guessed already
+      for (int i=0; i<25; i++) { //for loop
+        enter [i] = false; //sets all indexes of the array to false
+      }
+      int rngPhrase; //variable declaration
+      rngPhrase = randGen.nextInt (24); //stores the RNG number as value for variable
+      phrase = phrases[rngPhrase]; //stores the phrase at index of the RNG number as value for variable
+      char [] phraseC = new char [phrase.length()]; //char array declaration (stores the board)
+      char [] phraseS = new char [phrase.length()]; //char array declaration (stores the original phrase)
+      
+      userTotal[round] = 0; //starts the userTotal value as 0
+      //stores the characters in the phrase into a char array
+      for (int i=0; i<phrase.length(); i++) { //for loop
+        phraseC[i] = phrase.charAt(i); //splits the phrase and stores each character to the indexes of array
+        phraseS[i] = phrase.charAt(i); //splits the phrase and stores each character to the indexes of array
+      }
+      
+      for (int i=0; i<phrase.length(); i++) { //for loop
+        if (phraseS[i] != ' ') { //condition, if met proceed
+          phraseS [i] = '#'; //changes the phrase (in char array) to a series of hashtags
+        }
+      }
+      
+      phrase: //loop tag
+        do { //start of do while loop
+        if (boardFinish (phrase, phraseS)) { //if boardFinish returns true, continue
+          round++; //increase round by 1
+          continue round; //goes to loop called round
+        }
+          
+        System.out.println (); //line break to make things look neater
+        System.out.println ("Your turn:"); //Print this
+        System.out.println ("Your phrase is: "); //Print this
+        System.out.println (phraseS);  //Print this
+        int rngSpin = randGen.nextInt (25); //variable declaration and stores RNG number as value for that variable
+        wheelOfFortune (spinner , userTotal, rngSpin); //usage of wheelOfFortune method
+          
+        player: //loop tag
+          while (0==0) { //while loop start
+          if (rngSpin == 21 || rngSpin == 22) { //condition, if met, proceed (bankrupt)
+            userTotal[round]=0; //resets user money amount of current round to 0
+            break player; //exists player loop (goes to computer)
+          }
+          else if (rngSpin == 23) { //condition, if met, proceed (skip a turn)
+            break player; //exists player loop (goes to computer)
+          }
+          guessP = "reset"; //resets value of guessP
+          if (0 <= rngSpin && rngSpin <= 20 || rngSpin==24) { //condition, if met, proceed
+            show (alphabet, enter); //uses show method
+            System.out.println ("Your balance is $" + userTotal[round]); //Print this
+            System.out.println ("Would you like to buy a vowel for $250, guess a consonant, or guess the phrase? Enter 1 if you wish to buy a vowel, 2 if you wish to guess a consonant, or 3 if you would like to guess the phrase"); //Print this
+            int user; //variable declaration
+            String guess; //variable declaration
+            user=myScanner.nextInt (); //assigns what user enters as value for variable
+            if (user == 1 && userTotal[round]>249) { //condition, if met, proceed
+              System.out.println ("You are buying a vowel"); //Print this
+              System.out.println ("Please enter the vowel you would like to buy"); //Print this
+              myScanner.nextLine(); //clears scanner
+              guess=myScanner.nextLine (); //assigns what user enters as value for variable
+              iChange (guess); //uses iChange method
+              userTotal[round] = userTotal[round]-250; //changes user money amount of round (-250 dollars when user decides to buy a vowel)
+              tof = validateC (phrase, guessL, alphabet, enter, phraseS); //assigns return value of validateC method as value for variable
+              if (tof) { //condition, if tof is true
+                System.out.println ("That letter has already been guessed"); //Print this
+                break player; //breaks player loop
+              }
+              record (guessL, enter, alphabet); //uses record method
+              gameBoard (phrase, phraseC, phraseS, guessL, spinner, rngSpin); //uses gameboard method
+              if (numberC == 0) { //condition, if met proceed
+                break player; //exists player loop
+              }
+              System.out.println ("You now have a total of $" + userTotal[round]); //Print this
+              continue phrase;
+            }
+            else if (user == 2) {
+              System.out.println ("Please enter the consonant you wish to guess"); //Print this
+              myScanner.nextLine(); //clears scanner
+              guess=myScanner.nextLine(); //assigns what user enters as value for variable
+              iChange (guess); //uses ichange method
+              tof = validateC (phrase, guessL, alphabet, enter, phraseS); //assigns return value of validateC method as value for variable
+              if (tof) { //condition, if met, proceed
+                System.out.println ("That letter has already been guessed"); //Print this
+                break player; //exists player loop
+              }
+              record (guessL, enter, alphabet); //uses record method
+              gameBoard (phrase, phraseC, phraseS, guessL, spinner, rngSpin); //uses gameboard method
+              if (numberC>0) { //condition, if met, proceed
+                System.out.println ("You gained " + gain + " dollars!"); //Print this
+              }
+              else if (numberC == 0) { //condition, if met, proceed
+                break player; //exists player loop
+              }
+              userTotal [round] = userTotal[round] + gain; //adds gained money amount to user total money amount of round
+              System.out.println ("You now have a total of $" + userTotal[round]); //Print this
+              continue phrase; //goes back to start of phrase loop
+            }
+            else if (user == 3) { //condition, if met, proceed
+              System.out.println ("Please enter the phrase"); //Print this
+              myScanner.nextLine(); //clears scanner
+              guessP = myScanner.nextLine (); //assigns what user enters as value for variable
+              if (guessP.equalsIgnoreCase (phrase)) { //condition, if met, proceed
+                System.out.println ("Congrats, you have guessed the correct phrase!"); //Print this
+                if (userTotal[round] < 1000) { //condition, if met, proceed
+                  userTotal[round] = 1000; //sets value for variable 
+                }
+                System.out.println ("You now have a total of $" + userTotal[round]); //Print this
+                whichP (round); //uses whichP method
+                round++; //increases value of variable round by 1
+                continue round; //goes to start of round loop
+              } else { //if all previous conditions are not met
+                System.out.println ("That is not the correct phrase!"); //Print this
+                break player; //exists player loop
+              } 
+            }else { //if all previous conditions are not met
+              System.out.println ("You do not have enough money to buy a vowel, please enter 2 to guess a consonant, or 3 to guess the phrase"); //Print this
+            }
+          }
+      } //end of player while loop
+          
+        computer: //loop tag
+          while (0==0) { //start of while loop
+          rngSpin = randGen.nextInt (25); //assigns RNG number as value for variable
+          if (rngSpin == 21 || rngSpin == 22) { //condition, if met, proceed (bankrupt)
+            compTotal[round]=0; //sets computer's money amount of the round to 0
+            break computer; //exists computer loop
+          }
+          else if (rngSpin == 23) { //condition, if met, proceed (skip a turn)
+            break computer; //exists computer loop
+          }
+          else if ((0 <= rngSpin && rngSpin <= 20) || rngSpin==24) { //condition, if met, proceed
+            int compChoice = randGen.nextInt(4)+1; //assigns RNG number as value for vairable
+            if (1<=compChoice && compChoice<4) { //condition, if met, proceed
+              int cLetter = randGen.nextInt (5)+1; //assigns RNG number as value for variable
+              if (1<=cLetter && cLetter<5) { //condition, if met, proceed
+                textDisplay (phraseS, spinner, userTotal, rngSpin); //uses the textDisplay method
+                System.out.println ("I choose to guess a consonant"); //Print this
+                int rngAlpha = randGen.nextInt (21); //assigns RNG number as value for variable
+                char consonant [] = {'B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'X', 'Y', 'Z'}; //char array declaration and stores all consonant in it
+                char guessC = consonant[rngAlpha]; //stores the value of rngAlpha index of consonant array as value for variable 
+                System.out.println ("I guess the letter " + guessC); //Print this
+                tof = validateC (phrase, guessC, alphabet, enter, phraseS); //stores return value of validateC method as value for variable
+                if (tof) { //condition, if tof is true, proceed
+                  System.out.println ("That letter has already been guessed"); //Print this
+                  break computer; //exists computer loop
+                }
+                record (guessC, enter, alphabet); //uses record method
+                gameBoard (phrase, phraseC, phraseS, guessC, spinner, rngSpin); //uses gameboard method
+                if (numberC>0) { //condition, if met, proceed
+                  System.out.println ("You gained " + gain + " dollars!"); //Print this
+                }
+                else if (numberC == 0) { //condition, if met, proceed
+                  break computer; //exists computer loop
+                }
+                compTotal [round] = compTotal[round] + gain; //adds gained value to total computer money value of round
+                System.out.println ("You now have a total of $" + compTotal[round]); //Print this
+                continue computer; //goes to start of computer loop
+              }
+              else if (cLetter == 5 && compTotal[round] >249) { //condition, if met, proceed
+                textDisplay (phraseS, spinner, userTotal, rngSpin); //uses the textDisplay method
+                System.out.println ("I choose to buy a vowel"); //Print this
+                compTotal[round] = compTotal[round] - 250; //deducts $250 if computer buys a vowel
+                int rngVowel = randGen.nextInt (5); //stores RNG number as value for variable
+                char [] vowels = {'A', 'E', 'I', 'O', 'U'}; //char array declaration for all vowels
+                char vowel = vowels[rngVowel]; //stores value of index rngVowel of vowels array as value for variable
+                System.out.println ("I will buy the vowel: " + vowel); //Print this
+                tof = validateC (phrase, vowel, alphabet, enter, phraseS); //stores return value of validateC method
+                if (tof) { //condition, if tof is true, proceed
+                  System.out.println ("That letter has already been guessed"); //Print this
+                  break computer; //exists computer loop
+                }
+                record (vowel, enter, alphabet); //uses record method
+                gameBoard (phrase, phraseC, phraseS, vowel, spinner, rngSpin); //uses gameboard method
+                if (numberC == 0) { //condition, if true, proceed
+                  break computer; //exists computer loop
+                }
+              }
+            } 
+            else if (compChoice == 4) { //condition, if true, proceed
+              textDisplay (phraseS, spinner, userTotal, rngSpin); //uses the textDisplay method
+              System.out.println ("I choose to guess the phrase"); //Print this
+              int rngPhraseC = randGen.nextInt(25); //stores RNG number as value for variable
+              String compPhrase = phrases[rngPhraseC]; //variable declaration and stores index rngPhraseC of phrases array as value for variable
+              System.out.println ("I guess the phrase is: " + compPhrase); //Print this
+              if (compPhrase.equalsIgnoreCase (phrase)) { //condition, if met, proceed
+                System.out.println ("Congrats, you have guessed the correct phrase!"); //Print this
+                if (compTotal[round] < 1000) { //condition, if true, proceed
+                  compTotal[round] = 1000; //sets computer money amount of round to 1000
+                }
+                System.out.println ("You now have a total of $" + compTotal[round]); //Print this
+                whichP (round); //uses whichP method
+                round++; //increase value of round by 1
+                continue round; //goes to start of round loop
+              } else { //if all previous conditions are not met, proceed
+                System.out.println ("That is not the correct phrase!"); //Print this
+                break computer; //exists computer loop
+              } 
+            }
+          }
+        } //end of while loop
+        if (boardFinish (phrase, phraseS)) { //if boardFinish returns true, continue
+          round++; //increase round by 1
+          continue round; //goes to loop called round
+        }
+
+      } while (!guessP.equalsIgnoreCase (phrase)); //reloop if condition is true
+    }
+      System.out.println ("Here are the scores"); //Print this
+      int userEnd=0, compEnd =0; //variable delcaration and value assignment
+      for (int i=1; i<4; i++) { //for loop
+        userEnd = userEnd + userTotal[i]; //calculates user money total of all 3 rounds
+        compEnd = compEnd + compTotal[i]; //calculates computer money total of all 3 rounds
+      }
+      System.out.println ("You have a total of $" + userEnd + " || Computer has a total of $" + compEnd); //Print this
+      if (userEnd>compEnd) { //condition, if met, proceed (user has more money than computer)
+        System.out.println ("You won, congrats!"); //Print this
+      }
+      else if (compEnd > userEnd) { //condition, if met, proceed (computer has more money than computer)
+        System.out.println ("The computer won, better luck next time!"); //Print this
+      }
+      System.out.println ("Would you like to play again? Enter 1 if you do, or enter 2 if you don't"); //Print this
+      again = myScanner.nextInt(); //stores what user inputs as value for variable
+    } while (again == 1); //condition/end of do while loop
+    System.out.println ("Thanks for playing!"); //Print this
+  } //end of main entry point
+} //end of file
+
+
+
